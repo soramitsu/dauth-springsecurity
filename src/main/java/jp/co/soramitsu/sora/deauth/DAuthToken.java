@@ -26,6 +26,7 @@ import jp.co.soramitsu.sora.sdk.did.model.dto.DID;
 import jp.co.soramitsu.sora.sdk.did.parser.generated.ParserException;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.apache.commons.codec.DecoderException;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -62,19 +63,47 @@ public class DAuthToken extends UsernamePasswordAuthenticationToken {
   }
 
   private void initFields(HttpServletRequest request) throws ParserException, IOException {
-    authId = parse(request.getHeader(SORA_AUTH_ID));
-    authTimestamp = ofEpochMilli(parseLong(request.getHeader(SORA_AUTH_TIMESTAMP)));
-    publicKeyId = parse(request.getHeader(SORA_AUTH_PUBLIC_KEY));
-    signatureHex = base64ToHex(request.getHeader(SORA_AUTH_SIGNATURE));
+    val authHeader = request.getHeader(SORA_AUTH_ID);
+    val timestampHeader = request.getHeader(SORA_AUTH_TIMESTAMP);
+    val publicKeyHeader = request.getHeader(SORA_AUTH_PUBLIC_KEY);
+    val signatureHeader = request.getHeader(SORA_AUTH_SIGNATURE);
+
+    log.trace("Incoming request header: {}: {}",
+        SORA_AUTH_ID, authHeader
+    );
+    log.trace("Incoming request header: {}: {}",
+        SORA_AUTH_TIMESTAMP, timestampHeader
+    );
+    log.trace("Incoming request header: {}: {}",
+        SORA_AUTH_PUBLIC_KEY, publicKeyHeader
+    );
+    log.trace("Incoming request header: {}: {}",
+        SORA_AUTH_SIGNATURE, signatureHeader
+    );
+
+    authId = parse(authHeader);
+    authTimestamp = ofEpochMilli(parseLong(timestampHeader));
+
+    log.trace("Auth timestamp in UTC format: {}", authTimestamp);
+
+    publicKeyId = parse(publicKeyHeader);
+    signatureHex = base64ToHex(signatureHeader);
+
+    log.trace("Signature hex: {}", signatureHex);
 
     method =
         ofNullable(resolve(request.getMethod().toUpperCase()))
             .orElseThrow(
                 () -> new IllegalArgumentException("Got null instead of request method"));
+
+    log.trace("Request method: {}", method);
+
     try (BufferedReader reader = request.getReader()) {
       readRequestBody(reader);
     }
     requestUrl = getFullURL(request);
+
+    log.trace("Request full url: {}", requestUrl);
   }
 
   private void readRequestBody(BufferedReader reader) {
@@ -82,11 +111,17 @@ public class DAuthToken extends UsernamePasswordAuthenticationToken {
         method.equals(POST) || method.equals(PUT)
             ? reader.lines().collect(joining(lineSeparator()))
             : "";
+    log.trace("Request body: {}", postParams);
   }
 
   private static String getFullURL(HttpServletRequest request) {
     StringBuilder requestURL = new StringBuilder(request.getRequestURL().toString());
+
+    log.trace("Request URL: {}", requestURL);
+
     String queryString = request.getQueryString();
+
+    log.trace("Request query string: {}", queryString);
 
     if (queryString == null) {
       return requestURL.toString();

@@ -33,6 +33,8 @@ public class DAuthProvider implements AuthenticationProvider {
         .apply(token.getAuthId().toString())
         .orElseThrow(() -> new NoSuchDIDException(token.getAuthId()));
 
+    log.trace("Fetched DDO: {}", ddo);
+
     val verifyingVisitor = new VerifyingVisitor();
 
     ddo.getAuthentication().stream()
@@ -40,10 +42,14 @@ public class DAuthProvider implements AuthenticationProvider {
         .orElseThrow(() -> new NoSuchAuthenticationException(token.getPublicKeyId()))
         .accept(verifyingVisitor);
 
+    log.trace("Visited authentication visitor");
+
     ddo.getPublicKey().stream()
         .filter(pk -> pk.getId().equals(token.getPublicKeyId())).findFirst()
         .orElseThrow(() -> new NoSuchPublicKeyException(token.getPublicKeyId()))
         .accept(verifyingVisitor);
+
+    log.trace("Visited public key visitor");
 
     return verifyingVisitor.verify(
         token.payloadBytes(),

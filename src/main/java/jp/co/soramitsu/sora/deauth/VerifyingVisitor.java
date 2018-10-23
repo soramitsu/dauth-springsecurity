@@ -59,6 +59,7 @@ public class VerifyingVisitor implements AuthenticationVisitor, PublicKeyVisitor
 
   @Override
   public void visit(Ed25519Sha3VerificationKey ed25519Sha3VerificationKey) {
+    log.trace("Public key: {}", encodeHexString(ed25519Sha3VerificationKey.getPublicKey()));
     this.publicKey = publicKeyFromBytes(ed25519Sha3VerificationKey.getPublicKey());
   }
 
