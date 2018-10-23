@@ -1,4 +1,4 @@
-package jp.co.soramitsu.sora.deauth;
+package jp.co.soramitsu.sora.dauth;
 
 import static java.util.Objects.nonNull;
 import static jp.co.soramitsu.crypto.ed25519.Ed25519Sha3.publicKeyFromBytes;

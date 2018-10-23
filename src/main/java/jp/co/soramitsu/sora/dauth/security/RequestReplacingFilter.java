@@ -1,4 +1,4 @@
-package jp.co.soramitsu.sora.deauth.security;
+package jp.co.soramitsu.sora.dauth.security;
 
 import java.io.IOException;
 import javax.servlet.FilterChain;

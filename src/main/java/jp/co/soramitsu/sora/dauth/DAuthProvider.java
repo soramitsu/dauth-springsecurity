@@ -1,11 +1,11 @@
-package jp.co.soramitsu.sora.deauth;
+package jp.co.soramitsu.sora.dauth;
 
 import java.util.Optional;
 import java.util.function.Function;
-import jp.co.soramitsu.sora.deauth.exceptions.InvalidSignatureException;
-import jp.co.soramitsu.sora.deauth.exceptions.NoSuchAuthenticationException;
-import jp.co.soramitsu.sora.deauth.exceptions.NoSuchDIDException;
-import jp.co.soramitsu.sora.deauth.exceptions.NoSuchPublicKeyException;
+import jp.co.soramitsu.sora.dauth.exceptions.InvalidSignatureException;
+import jp.co.soramitsu.sora.dauth.exceptions.NoSuchAuthenticationException;
+import jp.co.soramitsu.sora.dauth.exceptions.NoSuchDIDException;
+import jp.co.soramitsu.sora.dauth.exceptions.NoSuchPublicKeyException;
 import jp.co.soramitsu.sora.sdk.did.model.dto.DDO;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

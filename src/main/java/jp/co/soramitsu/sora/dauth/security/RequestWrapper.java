@@ -1,4 +1,4 @@
-package jp.co.soramitsu.sora.deauth.security;
+package jp.co.soramitsu.sora.dauth.security;
 
 import static java.lang.System.lineSeparator;
 import static java.nio.charset.StandardCharsets.UTF_8;

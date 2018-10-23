@@ -1,6 +1,6 @@
-package jp.co.soramitsu.sora.deauth.exceptions;
+package jp.co.soramitsu.sora.dauth.exceptions;
 
-import jp.co.soramitsu.sora.deauth.DAuthToken;
+import jp.co.soramitsu.sora.dauth.DAuthToken;
 import org.springframework.security.authentication.BadCredentialsException;
 
 public class InvalidSignatureException extends BadCredentialsException {

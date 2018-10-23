@@ -1,4 +1,4 @@
-package jp.co.soramitsu.sora.deauth;
+package jp.co.soramitsu.sora.dauth;
 
 import static java.lang.Long.parseLong;
 import static java.lang.System.lineSeparator;
@@ -8,10 +8,10 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 import static javax.xml.bind.DatatypeConverter.parseBase64Binary;
 import static javax.xml.bind.DatatypeConverter.printHexBinary;
-import static jp.co.soramitsu.sora.deauth.DAuthHeaders.SORA_AUTH_ID;
-import static jp.co.soramitsu.sora.deauth.DAuthHeaders.SORA_AUTH_PUBLIC_KEY;
-import static jp.co.soramitsu.sora.deauth.DAuthHeaders.SORA_AUTH_SIGNATURE;
-import static jp.co.soramitsu.sora.deauth.DAuthHeaders.SORA_AUTH_TIMESTAMP;
+import static jp.co.soramitsu.sora.dauth.DAuthHeaders.SORA_AUTH_ID;
+import static jp.co.soramitsu.sora.dauth.DAuthHeaders.SORA_AUTH_PUBLIC_KEY;
+import static jp.co.soramitsu.sora.dauth.DAuthHeaders.SORA_AUTH_SIGNATURE;
+import static jp.co.soramitsu.sora.dauth.DAuthHeaders.SORA_AUTH_TIMESTAMP;
 import static jp.co.soramitsu.sora.sdk.did.model.dto.DID.parse;
 import static org.apache.commons.codec.binary.Hex.decodeHex;
 import static org.springframework.http.HttpMethod.POST;

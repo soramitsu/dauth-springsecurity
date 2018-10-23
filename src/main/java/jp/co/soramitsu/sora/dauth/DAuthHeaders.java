@@ -1,4 +1,4 @@
-package jp.co.soramitsu.sora.deauth;
+package jp.co.soramitsu.sora.dauth;
 
 public final class DAuthHeaders {
 
