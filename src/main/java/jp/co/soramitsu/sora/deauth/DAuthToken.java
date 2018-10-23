@@ -46,22 +46,7 @@ public class DAuthToken extends UsernamePasswordAuthenticationToken {
   public DAuthToken(HttpServletRequest request) {
     super(request.getHeader(SORA_AUTH_ID), null);
     try {
-      authId = parse(request.getHeader(SORA_AUTH_ID));
-      authTimestamp = ofEpochMilli(parseLong(request.getHeader(SORA_AUTH_TIMESTAMP)));
-      publicKeyId = parse(request.getHeader(SORA_AUTH_PUBLIC_KEY));
-      signatureHex = base64ToHex(request.getHeader(SORA_AUTH_SIGNATURE));
-
-      method =
-          ofNullable(resolve(request.getMethod().toUpperCase()))
-              .orElseThrow(
-                  () -> new IllegalArgumentException("Got null instead of request method"));
-      try (BufferedReader reader = request.getReader()) {
-        postParams =
-            method.equals(POST) || method.equals(PUT)
-                ? reader.lines().collect(joining(lineSeparator()))
-                : "";
-      }
-      requestUrl = getFullURL(request);
+      initFields(request);
     } catch (IOException e) {
       throw new BadCredentialsException("Reading request body exception", e);
     } catch (ParserException e) {
@@ -74,6 +59,29 @@ public class DAuthToken extends UsernamePasswordAuthenticationToken {
     } catch (Throwable e) {
       throw new BadCredentialsException("Incorrect credentials", e);
     }
+  }
+
+  private void initFields(HttpServletRequest request) throws ParserException, IOException {
+    authId = parse(request.getHeader(SORA_AUTH_ID));
+    authTimestamp = ofEpochMilli(parseLong(request.getHeader(SORA_AUTH_TIMESTAMP)));
+    publicKeyId = parse(request.getHeader(SORA_AUTH_PUBLIC_KEY));
+    signatureHex = base64ToHex(request.getHeader(SORA_AUTH_SIGNATURE));
+
+    method =
+        ofNullable(resolve(request.getMethod().toUpperCase()))
+            .orElseThrow(
+                () -> new IllegalArgumentException("Got null instead of request method"));
+    try (BufferedReader reader = request.getReader()) {
+      readRequestBody(reader);
+    }
+    requestUrl = getFullURL(request);
+  }
+
+  private void readRequestBody(BufferedReader reader) {
+    postParams =
+        method.equals(POST) || method.equals(PUT)
+            ? reader.lines().collect(joining(lineSeparator()))
+            : "";
   }
 
   private static String getFullURL(HttpServletRequest request) {
