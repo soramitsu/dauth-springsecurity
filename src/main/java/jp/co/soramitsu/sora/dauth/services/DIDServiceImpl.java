@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import jp.co.soramitsu.sora.dauth.exceptions.DidExistsException;
 import jp.co.soramitsu.sora.dauth.exceptions.UnknownResponseException;
+import jp.co.soramitsu.sora.dauth.services.GenericResponse.Status;
 import jp.co.soramitsu.sora.sdk.did.model.dto.DDO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -40,6 +41,7 @@ import org.springframework.web.client.RestTemplate;
 @AllArgsConstructor
 public class DIDServiceImpl implements DIDService {
 
+  private static final String SUCCESSFUL_DID_RESPONSE = "OK";
   private static final String GET_DDO_FORMAT = "%s/did/%s";
   private static final String POST_DDO_FORMAT = "%s/did";
   private URL didResolverUrl;
@@ -70,9 +72,11 @@ public class DIDServiceImpl implements DIDService {
           try {
             log.debug("Trying to fetch DDO by DID {}", did);
             val response = requestGetDDO(did);
-            if (response.getStatusCode().is2xxSuccessful()) {
-              log.debug("DDO {} fetched successfully by DID {}", response.getBody(), did);
-              return response.getBody();
+            if (response.getStatusCode().is2xxSuccessful() && checkDidResolverResponseCode(
+                response.getBody())) {
+              val ddo = ofNullable(response.getBody()).map(GetDDORs::getDdo).orElse(null);
+              log.debug("DDO {} fetched successfully by DID {}", ddo, did);
+              return ddo;
             }
             return null;
           } catch (ResourceAccessException e) {
@@ -94,29 +98,42 @@ public class DIDServiceImpl implements DIDService {
   @Override
   public void postDDO(@NonNull DDO ddo) throws DidExistsException {
     val response = requestCreateDDO(ddo);
-    if (response.getStatusCode() != OK) {
+    if (response.getStatusCode() != OK || !checkDidResolverResponseCode(response.getBody())) {
       if (response.getStatusCode() == UNPROCESSABLE_ENTITY) {
         throw new DidExistsException(ddo.getId());
+      } else if (!checkDidResolverResponseCode(response.getBody())) {
+        throw new UnknownResponseException(response.getStatusCode(),
+            getResponseCode(response.getBody()));
       } else {
         throw new UnknownResponseException(response.getStatusCode());
       }
     }
   }
 
-  private ResponseEntity<Void> requestCreateDDO(DDO ddo) {
+  private ResponseEntity<GenericResponse> requestCreateDDO(DDO ddo) {
     HttpHeaders headers = new HttpHeaders();
     headers.setAccept(singletonList(APPLICATION_JSON));
     HttpEntity<DDO> entity = new HttpEntity<>(ddo, headers);
 
-    return restTemplate.exchange(format(POST_DDO_FORMAT, didResolverUrl), POST, entity, Void.class);
+    return restTemplate
+        .exchange(format(POST_DDO_FORMAT, didResolverUrl), POST, entity, GenericResponse.class);
   }
 
-  private ResponseEntity<DDO> requestGetDDO(@Nullable String key) {
+  private ResponseEntity<GetDDORs> requestGetDDO(@Nullable String key) {
     HttpHeaders headers = new HttpHeaders();
     headers.setAccept(singletonList(APPLICATION_JSON));
     HttpEntity entity = new HttpEntity(headers);
 
     return restTemplate.exchange(
-        format(GET_DDO_FORMAT, didResolverUrl, key), GET, entity, DDO.class);
+        format(GET_DDO_FORMAT, didResolverUrl, key), GET, entity, GetDDORs.class);
+  }
+
+  private boolean checkDidResolverResponseCode(GenericResponse response) {
+    return SUCCESSFUL_DID_RESPONSE.equals(getResponseCode(response));
+  }
+
+  private String getResponseCode(GenericResponse response) {
+    return ofNullable(response).map(GenericResponse::getStatus).map(Status::getCode)
+        .orElse(null);
   }
 }

@@ -13,7 +13,6 @@ import lombok.val;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 
 @Slf4j
 @AllArgsConstructor
@@ -21,9 +20,9 @@ public class DAuthProvider implements AuthenticationProvider {
 
   private Function<String, Optional<DDO>> didService;
   /**
-   * Invoked on successful authorization.
-   * MUST produce {@link Authentication} with {@link Authentication#isAuthenticated()} value true
-   * */
+   * Invoked on successful authorization. MUST produce {@link Authentication} with {@link
+   * Authentication#isAuthenticated()} value true
+   */
   private Function<DAuthToken, Authentication> onSuccess;
 
   private boolean isValidSignature(DAuthToken token) {
@@ -58,7 +57,7 @@ public class DAuthProvider implements AuthenticationProvider {
   }
 
   @Override
-  public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+  public Authentication authenticate(Authentication authentication) {
     try {
       val dAuthentication = (DAuthToken) authentication;
       if (isValidSignature(dAuthentication)) {
