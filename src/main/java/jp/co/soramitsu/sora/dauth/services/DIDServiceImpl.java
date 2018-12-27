@@ -11,7 +11,6 @@ import static jp.co.soramitsu.sora.dauth.utils.Utils.restTemplate;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpStatus.OK;
-import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 import com.google.common.cache.CacheLoader;
@@ -42,6 +41,7 @@ import org.springframework.web.client.RestTemplate;
 public class DIDServiceImpl implements DIDService {
 
   private static final String SUCCESSFUL_DID_RESPONSE = "OK";
+  private static final String DID_DUPLICATE = "DID_DUPLICATE";
   private static final String GET_DDO_FORMAT = "%s/did/%s";
   private static final String POST_DDO_FORMAT = "%s/did";
   private URL didResolverUrl;
@@ -72,8 +72,8 @@ public class DIDServiceImpl implements DIDService {
           try {
             log.debug("Trying to fetch DDO by DID {}", did);
             val response = requestGetDDO(did);
-            if (response.getStatusCode().is2xxSuccessful() && checkDidResolverResponseCode(
-                response.getBody())) {
+            if (response.getStatusCode().is2xxSuccessful() && isSuccessfulResponse(
+                getResponseCode(response.getBody()))) {
               val ddo = ofNullable(response.getBody()).map(GetDDORs::getDdo).orElse(null);
               log.debug("DDO {} fetched successfully by DID {}", ddo, did);
               return ddo;
@@ -98,14 +98,14 @@ public class DIDServiceImpl implements DIDService {
   @Override
   public void postDDO(@NonNull DDO ddo) throws DidExistsException {
     val response = requestCreateDDO(ddo);
-    if (response.getStatusCode() != OK || !checkDidResolverResponseCode(response.getBody())) {
-      if (response.getStatusCode() == UNPROCESSABLE_ENTITY) {
+    val responseCode = getResponseCode(response.getBody());
+    if (response.getStatusCode() != OK) {
+      throw new UnknownResponseException(response.getStatusCode());
+    } else if (!isSuccessfulResponse(responseCode)) {
+      if (isDuplicatedDid(responseCode)) {
         throw new DidExistsException(ddo.getId());
-      } else if (!checkDidResolverResponseCode(response.getBody())) {
-        throw new UnknownResponseException(response.getStatusCode(),
-            getResponseCode(response.getBody()));
       } else {
-        throw new UnknownResponseException(response.getStatusCode());
+        throw new UnknownResponseException(response.getStatusCode(), responseCode);
       }
     }
   }
@@ -128,8 +128,12 @@ public class DIDServiceImpl implements DIDService {
         format(GET_DDO_FORMAT, didResolverUrl, key), GET, entity, GetDDORs.class);
   }
 
-  private boolean checkDidResolverResponseCode(GenericResponse response) {
-    return SUCCESSFUL_DID_RESPONSE.equals(getResponseCode(response));
+  private boolean isSuccessfulResponse(String responseCode) {
+    return SUCCESSFUL_DID_RESPONSE.equalsIgnoreCase(responseCode);
+  }
+
+  private boolean isDuplicatedDid(String responseCode) {
+    return DID_DUPLICATE.equalsIgnoreCase(responseCode);
   }
 
   private String getResponseCode(GenericResponse response) {
