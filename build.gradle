@@ -1,5 +1,5 @@
 group 'jp.co.soramitsu.sora'
-version '0.0.1'
+version '0.3.0'
 
 repositories {
   mavenCentral()
@@ -21,7 +21,7 @@ ext {
   lombokVersion = "1.18.2"
   springSecurityVersion = "5.0.6.RELEASE"
   junitVersion = "4.12"
-  soraSdkVersion = '0.3.7'
+  soraSdkVersion = '0.3.12'
   slf4jVersion = '1.7.25'
   servletApiVersion = '3.1.0'
   codecVersion = '1.11'

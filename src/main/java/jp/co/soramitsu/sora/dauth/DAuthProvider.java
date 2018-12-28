@@ -34,23 +34,23 @@ public class DAuthProvider implements AuthenticationProvider {
 
     log.trace("Fetched DDO: {}", ddo);
 
-    val verifyingVisitor = new VerifyingVisitor();
+    val verifyingExecutor = new VerifyingExecutor();
 
     ddo.getAuthentication().stream()
         .filter(auth -> auth.getPublicKey().equals(token.getPublicKeyId())).findFirst()
         .orElseThrow(() -> new NoSuchAuthenticationException(token.getPublicKeyId()))
-        .accept(verifyingVisitor);
+        .execute(verifyingExecutor);
 
-    log.trace("Visited authentication visitor");
+    log.trace("Executed authentication logic");
 
     ddo.getPublicKey().stream()
         .filter(pk -> pk.getId().equals(token.getPublicKeyId())).findFirst()
         .orElseThrow(() -> new NoSuchPublicKeyException(token.getPublicKeyId()))
-        .accept(verifyingVisitor);
+        .execute(verifyingExecutor);
 
-    log.trace("Visited public key visitor");
+    log.trace("Executed public key logic");
 
-    return verifyingVisitor.verify(
+    return verifyingExecutor.verify(
         token.payloadBytes(),
         token.signatureBytes()
     );
