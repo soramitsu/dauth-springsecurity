@@ -45,7 +45,7 @@ public class DAuthToken extends UsernamePasswordAuthenticationToken {
   private String requestUrl;
 
   public DAuthToken(HttpServletRequest request) {
-    super(request.getHeader(SORA_AUTH_ID), null);
+    super(request.getHeader(SORA_AUTH_ID), request.getHeader(SORA_AUTH_PUBLIC_KEY));
     try {
       initFields(request);
     } catch (IOException e) {
