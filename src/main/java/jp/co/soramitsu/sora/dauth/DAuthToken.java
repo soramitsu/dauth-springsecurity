@@ -14,6 +14,7 @@ import static jp.co.soramitsu.sora.dauth.DAuthHeaders.SORA_AUTH_SIGNATURE;
 import static jp.co.soramitsu.sora.dauth.DAuthHeaders.SORA_AUTH_TIMESTAMP;
 import static jp.co.soramitsu.sora.sdk.did.model.dto.DID.parse;
 import static org.apache.commons.codec.binary.Hex.decodeHex;
+import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 import static org.springframework.http.HttpMethod.resolve;
@@ -108,7 +109,7 @@ public class DAuthToken extends UsernamePasswordAuthenticationToken {
 
   private void readRequestBody(BufferedReader reader) {
     postParams =
-        method.equals(POST) || method.equals(PUT)
+        method.equals(POST) || method.equals(PUT) || method.equals(GET)
             ? reader.lines().collect(joining(lineSeparator()))
             : "";
     log.trace("Request body: {}", postParams);
